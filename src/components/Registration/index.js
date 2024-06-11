@@ -1,57 +1,105 @@
 import React, { Component } from "react";
-import bcrypt from "bcryptjs";
-import "./index.css";
+import swal from "sweetalert";
+import { Button, TextField, Link } from "@mui/material";
+import { withRouter } from "../properties/util";
+const axios = require("axios");
 
-class Registration extends Component {
+class Register extends Component {
   state = {
-    username: "",
-    password: "",
-  };
+      username: '',
+      password: '',
+      confirm_password: ''
+    }
 
-  handleChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value });
-  };
+  onChange = (e) => this.setState({ [e.target.name]: e.target.value });
 
-  handleSubmit = (e) => {
-    e.preventDefault();
+  register = () => {
 
-    const { history } = this.props;
-    
-    const { username, password } = this.state;
-
-    const hashedPassword = bcrypt.hashSync(password, 10);
-    const user = { username, password: hashedPassword };
-
-    localStorage.setItem(username, JSON.stringify(user));
-    history.push("/login");
-  };
+    axios.post('http://localhost:2000/register', {
+      username: this.state.username,
+      password: this.state.password,
+    }).then((res) => {
+      swal({
+        text: res.data.title,
+        icon: "success",
+        type: "success"
+      });
+      // this.props.history.push('/');
+      this.props.navigate("/");
+    }).catch((err) => {
+      swal({
+        text: err.response.data.errorMessage,
+        icon: "error",
+        type: "error"
+      });
+    });
+  }
 
   render() {
     return (
-      <div className="form-container">
-        <form onSubmit={this.handleSubmit}>
+      <div style={{ marginTop: '200px' }}>
+        <div>
           <h2>Register</h2>
-          <input
+        </div>
+
+        <div>
+          <TextField
+            id="standard-basic"
             type="text"
+            autoComplete="off"
             name="username"
-            placeholder="Username"
-            onChange={this.handleChange}
+            value={this.state.username}
+            onChange={this.onChange}
+            placeholder="User Name"
             required
           />
-          <input
+          <br /><br />
+          <TextField
+            id="standard-basic"
             type="password"
+            autoComplete="off"
             name="password"
+            value={this.state.password}
+            onChange={this.onChange}
             placeholder="Password"
-            onChange={this.handleChange}
             required
           />
-          <button type="submit">
-            Create Account
-          </button>
-        </form>
+          <br /><br />
+          <TextField
+            id="standard-basic"
+            type="password"
+            autoComplete="off"
+            name="confirm_password"
+            value={this.state.confirm_password}
+            onChange={this.onChange}
+            placeholder="Confirm Password"
+            required
+          />
+          <br /><br />
+          <Button
+            className="button_style"
+            variant="contained"
+            color="primary"
+            size="small"
+            disabled={this.state.username === '' && this.state.password === ''}
+            onClick={this.register}
+          >
+            Register
+          </Button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <Link
+            // href="/"
+            component="button"
+            style={{ fontFamily: "inherit", fontSize: "inherit" }}
+            onClick={() => {
+              this.props.navigate("/");
+            }}
+          >
+            Login
+          </Link>
+        </div>
       </div>
     );
   }
 }
 
-export default Registration;
+export default withRouter(Register);
